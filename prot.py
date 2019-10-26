@@ -10,19 +10,11 @@ import time #Necessário importar para usar na função Alarme()
 
 #FOI NECESSÁRIO RODAR O CÓDIGO ABAIXO UMA VEZ PARA GERAR O PAR DE CHAVES RSA E GUARDAR ELE
 
-#contador_chave = open('qnt_chave.dat', 'ab')
-#pickle.dump(1, contador_chave)
-#contador_chave.close()
+#chave_gerada = RSA.generate(2048)
+#c = open('chave.pem','wb')
+#c.write(chave_gerada.export_key('PEM'))
+#c.close()
 
-#contador_chave = open('qnt_chave.dat', 'rb')
-#c_chave = pickle.load(contador_chave)
-#for i in range(2):
-   # chave_gerada = RSA.generate(2048)
-   # if c_chave == 1:
-       # c = open('chave.pem','wb')
-      #  c.write(chave_gerada.export_key('PEM'))
-     #   c.close()
-    #c_chave += 1
 
 #FUNÇÃO RESPONSÁVEL POR CRIPTOGRAFAR A SENHA DO USUÁRIO
 def Criptografar(senha):
@@ -97,11 +89,14 @@ def Acessar(s):
             #verifica se alguma das senhas bate com a do usuário
             print("Acesso liberado!!!")
             print("-"*80)
+            status = True
             exit()
     if senhas != s:
         #caso a senha não bater, dispara o alarme
+        status = False
         print("Acesso negado!!!")
-        Alarme()
+    return status
+        
 
 #FUNÇÃO PRINCIPAL
 def main():
@@ -115,7 +110,7 @@ def main():
     print(dec)
     escolha = 0
     cont = 0
-    while escolha != 4: #enquanto a escolha do usuario for diferente de 3(que é a opçao para sair) o algoritmo irá rodar
+    while escolha != 3: #enquanto a escolha do usuario for diferente de 3(que é a opçao para sair) o algoritmo irá rodar
         print("Escolha o número correspondente ao que você quer realizar no sistema:".center(80))
         print("1 - Entrar no navio;".center(80))
         print("2 - Cadastrar;".center(74))
@@ -127,43 +122,54 @@ def main():
         patentes_validas = ["capitãodecorveta", "capitãodefragata", "capitãodemareguerra", "contra-almirante", "vice-almirante", "almirantedeesquadra", "almirante"]
 
         if (escolha == 1):
-            patente = input("Digite sua patente:")
-            senha = input("Digite sua senha:")
-            Acessar(senha)
-
+            cont_ten = 0
+            while cont_ten < 3:
+                patente = input("Digite sua patente:")
+                senha = input("Digite sua senha:")
+                s = Acessar(senha)
+                if s == False:
+                    cont_ten += 1
+                    vezes = 3 - cont_ten
+                    if cont_ten == 3:
+                        print("INVASOR DETECTADO!!!")
+                        Alarme()                        
+                        exit()
+                    print("Você pode tentar fazer login só mais {} vezes".format(vezes))
+                    
         elif (escolha == 2):
-            cad_pat = input("Digite sua patente:".lower())
-            cad_pat = cad_pat.replace(" ","")
-            cad_senha = input("Digite sua senha:")
-            # se a patente for valida cadastrar o usuario no txt
-            situacao = False
-            for patentes in patentes_validas:
-                if cad_pat == patentes:
-                    cont_cad = 0
-                    qnt_cad = open('qnt_cad.txt', 'r')
-                    for i in qnt_cad:
-                        cont_cad += 1
+            cont_tent = 0
+            while cont_tent < 3:
+                cad_pat = input("Digite sua patente:".lower())
+                cad_pat = cad_pat.replace(" ","")
+                cad_senha = input("Digite sua senha:")
+                # se a patente for valida cadastrar o usuario no txt
+                situacao = False
+                for patentes in patentes_validas:
+                    if cad_pat == patentes:
+                        cont_cad = 0
+                        qnt_cad = open('qnt_cad.txt', 'r')
+                        for i in qnt_cad:
+                            cont_cad += 1
 
-                    Cadastrar(cad_senha, cont_cad)
-                    print("Cadastrado com sucesso !!!")
-                    situacao = True
+                        Cadastrar(cad_senha, cont_cad)
+                        print("Cadastrado com sucesso !!!")
+                        situacao = True
+                        print(dec)
+                if situacao == False:
+                    # Usuário só pode tentar 3 vezes
+                    print("Sua patente não tem autorização para se cadastrar.")
                     print(dec)
-            if situacao == False:
-                # Usuário só pode tentar 3 vezes
-                print("Sua patente não é autorizada a entrar no navio, tente novamente.")
-                print(dec)
-                cont +=1
-                tentativas = 3 - cont
-                print("Você pode tentar cadastrar mais {} vezes.".format(tentativas))
-                print(dec)
-                if cont == 3:
-                    #Se o usuário tentar se cadastrar mais de 3 vezes o alarme dispara
-                    print("O programa irá encerrar por motivos de segurança")
-                    print("Invasor!!!")
-                    Alarme()
+                    cont_tent +=1
+                    tentativas = 3 - cont_tent
+                    if cont_tent == 3:
+                        #Se o usuário tentar se cadastrar mais de 3 vezes o alarme dispara
+                        print("INVASOR DETECTADO!!!")
+                        Alarme()
+                        print(dec)
+                        exit()
+                    print("Você pode tentar cadastrar mais {} vezes.".format(tentativas))
                     print(dec)
-                    exit()
-
+                    
         else:
             if escolha != 3:
                 cont += 1
@@ -173,7 +179,8 @@ def main():
                 print(dec)
 
                 if cont == 3:
-                    print("Você tentou mais de 3 vezes, por motivo de segurança o programa irá encerrar.")
+                    print("Você errou a escolha da funcionalidade mais de 3 vezes, por motivo de segurança o programa irá encerrar.")
+                    Alarme()
                     exit()
-            exit()
+            
 main()
