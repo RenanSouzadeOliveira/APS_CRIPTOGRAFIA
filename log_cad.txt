@@ -2,3 +2,5 @@ brabo123,almirante
 brabo123,capitãodecorveta
 renan123,almirante
 renan1234,capitãodefragata
+almi123,almirante
+cap123,capitãodecorveta

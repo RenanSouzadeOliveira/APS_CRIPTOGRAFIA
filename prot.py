@@ -7,7 +7,7 @@ import pickle #Importado para conservar a estrutura da senha criptografa na hora
 #NECESSÁRIO INSTALAR A BIBLIOTECA PYGAME POIS ELA NÃO VEM PADRÃO COM O PYTHON
 from pygame import mixer #Necessário importar para a função Alarme()
 import time #Necessário importar para usar na função Alarme()
-
+from datetime import datetime
 #FOI NECESSÁRIO RODAR O CÓDIGO ABAIXO UMA VEZ PARA GERAR O PAR DE CHAVES RSA E GUARDAR ELE
 
 #chave_gerada = RSA.generate(2048)
@@ -107,7 +107,60 @@ def Acessar(login, s, p):
             print("Acesso liberado!!!")
             print("Bem-vindo {}".format(p))
             status_final = True
+            dh = datetime.now()
+            dht = dh.strftime('%d/%m/%y %H:%M')
+            acessos = open('acessos.txt','a')
+            acessos.write(p + " - " + dht + "\n")
+            acessos.close()
             exit()
+    return status_final
+
+
+def Consultar(login, s, p):
+    dec = "-" * 80
+    #patente = p.replace(" ","")
+    cont = 0 #recebe quantos usuários estão cadastrados no arquivo
+    qnt_cad = open('qnt_cad.txt', 'r') #Abrindo arquivo com a quantidade de usuários cadastrados
+    linhas = qnt_cad.readlines()#pegando todas a linhas do arquivo e tranformando em lista
+    lista=[] #lista criada para fazer o controle da quantidade de usuários
+    for i in linhas:
+        lista.append(i) #a cada termo da lista linhas ele adiciona a lista 'lista'
+    qnt_cad.close()
+    for i in lista:
+        cont += 1 #para cada termo na lista 'lista' ele incrementa o contador
+    t_senha = [] #irá receber todas as senhas criptografadas
+    senha = open('senha_usu.dat','rb') # Abrindo o arquivo que armazena as senhas criptografadas
+    for i in range(cont):
+        t_senha.append(pickle.load(senha)) #atribuindo as senhas a lista
+    senha.close()
+    cont_test = 0
+    for senha in t_senha:
+        senhas = Decodificar(senha) #para cada senha da lista o algoritmo descriptografa e armazena na variavel
+        if senhas == s:
+            #verifica se alguma das senhas bate com a do usuário
+            status = True #atribuindo a variavel o valor true para sinalizar que a senha está cadastrada
+            cont_test += 1 #Se a senha estiver cadastrada incrementa o contador
+    if cont_test == 0:
+        # Se nenhuma senha bateu com a entrada do usuário atribui o valor false pra variavel, sinalizando que a senha não está cadastrada
+        status = False
+    pt = open('log_cad.txt', 'r') #Abrindo o arquivo que recebe os logins/patentes cadastrados
+    log_cadastrados = pt.readlines() # pegando todos os dados e atribuindo os mesmo a lista
+    pt.close()
+    status_final = False # iniciando a variavel que irá definir se o acesso é liberado ou não
+    for log in log_cadastrados:
+        #para cada linha na lista são executadas as linhas abaixo
+        log = log.replace("\n","")
+        log = log.split(",")
+        if log[0] == login and status == True and log[1] == p.replace(" ",""):
+            acessos = open('acessos.txt','r')
+            log = acessos.readlines()
+            acessos.close()
+            print("Acessos ao navio:")
+            print(dec)
+            for linha in log:
+                print(linha.replace("\n",""))
+            print(dec)
+            status_final = True
     return status_final
         
 
@@ -123,11 +176,12 @@ def main():
     print(dec)
     escolha = 0
     cont = 0
-    while escolha != 3: #enquanto a escolha do usuario for diferente de 3(que é a opçao para sair) o algoritmo irá rodar
+    while escolha != 4: #enquanto a escolha do usuario for diferente de 3(que é a opçao para sair) o algoritmo irá rodar
         print("Escolha o número correspondente ao que você quer realizar no sistema:".center(80))
         print("1 - Entrar no navio;".center(80))
         print("2 - Cadastrar;".center(74))
-        print("3 - Sair.".center(70))
+        print("3 - Consultar acessos;".center(82))
+        print("4 - Sair.".center(70))
         print(dec)
         escolha = int(input("Opção:"))
 
@@ -153,6 +207,7 @@ def main():
                         Alarme()                        
                         exit()
                     print("Você pode tentar fazer login só mais {} vezes".format(vezes))
+            
         elif (escolha == 2):
             #funcionalidade de cadastro
             cont_tent = 0
@@ -191,9 +246,28 @@ def main():
                         exit()
                     print("Você pode tentar cadastrar mais {} vezes.".format(tentativas))
                     print(dec)
+        elif escolha == 3:
+            cont_tent = 0
+            c = False
+            while cont_tent < 3 and c == False:
+                patentee = input("Digite sua patente:")
+                login = input("Digite seu login:")
+                senha = input("Digite sua senha:")
+                print(dec)
+                c = Consultar(login, senha, patentee) # chamando a função acessar e passando os parametros para ela
+                if c == False:
+                    #verificando se o login é valido ou não
+                    print("Acesso negado!!!")
+                    cont_tent += 1
+                    vezes = 3 - cont_tent
+                    if cont_ten == 3:
+                        print("INVASOR DETECTADO!!!")
+                        Alarme()                        
+                        exit()
+                    print("Você pode tentar fazer login só mais {} vezes".format(vezes))
         else:
             #controle de tentativas das funcionalidades
-            if escolha != 3:
+            if escolha != 4:
                 cont += 1
                 res = 3 - cont
                 print(dec)
