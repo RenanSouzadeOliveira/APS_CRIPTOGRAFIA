@@ -1,4 +1,4 @@
-APS DE CRIPTOGRAFIA EM CONCLUÍDA
+APS DE CRIPTOGRAFIA CONCLUÍDA
 ---------------------------------
 TRABALHO PROPOSTO
 ---------------------------------
