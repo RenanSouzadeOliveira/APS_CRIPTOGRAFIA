@@ -247,6 +247,7 @@ def main():
                     print("Você pode tentar cadastrar mais {} vezes.".format(tentativas))
                     print(dec)
         elif escolha == 3:
+            print("Primeiro é necessário realizar login")
             cont_tent = 0
             c = False
             while cont_tent < 3 and c == False:
@@ -260,7 +261,7 @@ def main():
                     print("Acesso negado!!!")
                     cont_tent += 1
                     vezes = 3 - cont_tent
-                    if cont_ten == 3:
+                    if cont_tent == 3:
                         print("INVASOR DETECTADO!!!")
                         Alarme()                        
                         exit()
